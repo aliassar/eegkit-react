@@ -254,6 +254,54 @@ describe("sources", () => {
     expect(result.current.status).toBe("closed");
   });
 
+  it("ignores callbacks from a connection that was already torn down", () => {
+    let late: ((status: "connecting") => void) | undefined;
+    const stale: EEGSource = {
+      sampleRate: FS,
+      channels: ["a"],
+      connect({ onStatus }) {
+        onStatus?.("open");
+        // Like a browser socket, report a close after disconnecting.
+        return () => {
+          late = () => onStatus?.("connecting");
+        };
+      },
+    };
+    const next = manualSource({ sampleRate: FS, channels: 1 });
+    const { rerender, result } = renderHook(({ source }) => useEEG(source), {
+      initialProps: { source: stale },
+    });
+    rerender({ source: next });
+    expect(result.current.status).toBe("open");
+    act(() => late?.("connecting"));
+    expect(result.current.status).toBe("open");
+  });
+
+  it("webSocketSource stays quiet after it closed itself", () => {
+    const sockets: { onclose: ((e: unknown) => void) | null }[] = [];
+    class FakeSocket {
+      binaryType = "blob";
+      onopen: ((e: never) => unknown) | null = null;
+      onmessage: ((e: never) => unknown) | null = null;
+      onerror: ((e: never) => unknown) | null = null;
+      onclose: ((e: never) => unknown) | null = null;
+      constructor(readonly url: string) {
+        sockets.push(this as never);
+      }
+      close() {}
+    }
+    const statuses: string[] = [];
+    const disconnect = webSocketSource("ws://test", {
+      sampleRate: FS,
+      channels: 1,
+      WebSocket: FakeSocket,
+    }).connect({ onFrame() {}, onStatus: (s) => statuses.push(s) });
+    disconnect();
+    sockets[0]?.onclose?.({ code: 1006, reason: "" });
+    disconnect();
+    expect(statuses).toEqual(["connecting", "closed"]);
+  });
+
   it("validates its arguments", () => {
     expect(() => manualSource({ sampleRate: 0, channels: 1 })).toThrow(RangeError);
     expect(() => manualSource({ sampleRate: FS, channels: [] })).toThrow(RangeError);

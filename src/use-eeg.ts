@@ -100,8 +100,13 @@ export function useEEG(
     setError(undefined);
     setSession((s) => s + 1);
 
+    // A source may call back after it was disconnected (a browser fires a
+    // socket's close event asynchronously). Those calls belong to a connection
+    // this hook has already left and must not touch the next one's state.
+    let active = true;
     const disconnect = source.connect({
       onFrame(frame) {
+        if (!active) return;
         try {
           pipeline.push(frame);
         } catch (e) {
@@ -111,13 +116,17 @@ export function useEEG(
         for (const listener of frameListeners) listener(frame);
       },
       onStatus(next) {
+        if (!active) return;
         setStatus(next);
         if (next === "open") lastErrorMessage = "";
       },
-      onError: report,
+      onError(e) {
+        if (active) report(e);
+      },
     });
 
     return () => {
+      active = false;
       disconnect();
       unsubscribe();
       resetRef.current = () => {};

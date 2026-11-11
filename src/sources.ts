@@ -111,15 +111,18 @@ export function webSocketSource(url: string, options: WebSocketSourceOptions): E
     channels,
     connect({ onFrame, onStatus, onError }) {
       onStatus?.("connecting");
+      // The socket's close event arrives after `close()` returns; once we
+      // closed it ourselves, report nothing more.
+      let closed = false;
       let connection: { close(): void };
       try {
         connection = connectWebSocket(
           url,
           {
-            onFrame,
-            onOpen: () => onStatus?.("open"),
-            onClose: () => onStatus?.(reconnect ? "connecting" : "closed"),
-            onError: (error) => onError?.(error),
+            onFrame: (frame) => closed || onFrame(frame),
+            onOpen: () => closed || onStatus?.("open"),
+            onClose: () => closed || onStatus?.(reconnect ? "connecting" : "closed"),
+            onError: (error) => closed || onError?.(error),
           },
           {
             reconnect,
@@ -133,6 +136,8 @@ export function webSocketSource(url: string, options: WebSocketSourceOptions): E
         return () => {};
       }
       return () => {
+        if (closed) return;
+        closed = true;
         connection.close();
         onStatus?.("closed");
       };
