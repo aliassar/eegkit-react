@@ -1,6 +1,7 @@
 {
   "name": "eegkit-react",
   "version": "0.1.0",
+  "private": true,
   "description": "React and React Native hooks for live EEG: connect a source, get band powers, signal quality, scrolling traces and neurofeedback scores. Built on eegkit.",
   "keywords": [
     "eeg",
@@ -53,11 +54,12 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "prepare": "tsup",
-    "prepublishOnly": "npm run typecheck && npm test"
+    "prepare": "tsup"
+  },
+  "dependencies": {
+    "eegkit": "github:aliassar/eegkit#v0.1.0"
   },
   "peerDependencies": {
-    "eegkit": "^0.1.0",
     "react": ">=18"
   },
   "devDependencies": {
@@ -65,7 +67,6 @@
     "@testing-library/react": "^16.3.3",
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
-    "eegkit": "github:aliassar/eegkit",
     "happy-dom": "^21.0.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

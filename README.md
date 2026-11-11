@@ -1,7 +1,6 @@
 # eegkit-react
 
 [![ci](https://github.com/aliassar/eegkit-react/actions/workflows/ci.yml/badge.svg)](https://github.com/aliassar/eegkit-react/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/eegkit-react)](https://www.npmjs.com/package/eegkit-react)
 [![license](https://img.shields.io/github/license/aliassar/eegkit-react)](LICENSE)
 
 React and React Native hooks for live EEG. Connect a source and you get band powers, signal
@@ -11,9 +10,14 @@ quality, scrolling traces and a ready-made neurofeedback loop. Built on
 The hooks are plain React with no DOM, so the same code runs on web, iOS and Android (Expo
 included).
 
+Install from GitHub, pinned to release tags. eegkit-react brings the matching eegkit with it; list
+eegkit as well if you import from it directly:
+
 ```sh
-npm install eegkit eegkit-react
+npm install github:aliassar/eegkit-react#v0.1.0 github:aliassar/eegkit#v0.1.0
 ```
+
+Neither package is published to the npm registry.
 
 ## Quick start
 
@@ -95,9 +99,9 @@ export function FocusTrainer() {
 }
 ```
 
-For a complete app with traces, quality indicators and sessions, see
-[eegkit-neurofeedback](https://github.com/aliassar/eegkit-neurofeedback), an Expo app for web,
-iOS and Android.
+For a complete app built with these hooks, see
+[eegkit-neurofeedback](https://github.com/aliassar/eegkit-neurofeedback): attention-training games
+for children with ADHD, for web, iOS and Android.
 
 ## Not medical software
 
